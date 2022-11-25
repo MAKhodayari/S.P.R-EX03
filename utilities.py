@@ -110,3 +110,9 @@ def confusion_score_matrix(label, pred):
     conf_mat = pd.DataFrame(conf_mat, index=class_name, columns=class_name)
     score_mat = pd.DataFrame(score_mat, index=class_name, columns=['Accuracy', 'Precision', 'Recall', 'F1'])
     return conf_mat, score_mat
+
+
+def generate_data(mu, sigma, c, size):
+    X = np.random.multivariate_normal(mu, sigma, size)
+    y = np.array([c for _ in range(size)])
+    return X, y
