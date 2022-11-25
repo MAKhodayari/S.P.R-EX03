@@ -36,22 +36,22 @@ if __name__ == '__main__':
 
     print(f'BC-Train1 Confusion Matrix:\n{train_1_conf_mat.round(2)}\n')
     print(f'BC-Train1 Score Matrix:\n{train_1_score_mat.round(2)}\n')
-    print(f'BC-Train1 Accuracy: {round(train_1_acc * 100, 2)}')
+    print(f'BC-Train1 Accuracy: {round(train_1_acc * 100, 2)}%')
 
     print('─' * 50)
 
     print(f'BC-Test1 Confusion Matrix:\n{test_1_conf_mat.round(2)}\n')
     print(f'BC-Test1 Score Matrix:\n{test_1_score_mat.round(2)}\n')
-    print(f'BC-Test1 Accuracy: {round(test_1_acc * 100, 2)}')
+    print(f'BC-Test1 Accuracy: {round(test_1_acc * 100, 2)}%')
 
     print('─' * 50)
 
     print(f'BC-Train2 Confusion Matrix:\n{train_2_conf_mat.round(2)}\n')
     print(f'BC-Train2 Score Matrix:\n{train_2_score_mat.round(2)}\n')
-    print(f'BC-Train2 Accuracy: {round(train_2_acc * 100, 2)}')
+    print(f'BC-Train2 Accuracy: {round(train_2_acc * 100, 2)}%')
 
     print('─' * 50)
 
     print(f'BC-Test2 Confusion Matrix:\n{test_2_conf_mat.round(2)}\n')
     print(f'BC-Test2 Score Matrix:\n{test_2_score_mat.round(2)}\n')
-    print(f'BC-Test2 Accuracy: {round(test_2_acc * 100, 2)}')
+    print(f'BC-Test2 Accuracy: {round(test_2_acc * 100, 2)}%')

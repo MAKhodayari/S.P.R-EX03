@@ -55,12 +55,14 @@ def bayesian_prediction(data, phi, mu, sigma):
     X = data.iloc[:, :-1].values
     y = data.iloc[:, -1].values
     c_class = len(np.unique(y))
+    sigma_inv = np.linalg.inv(sigma)
     probs = []
-    for i in range(c_class):
-        sigma_inv = np.linalg.inv(sigma)
-        prob = np.log(phi[i]) + (-0.5 * np.sum((X - mu[i]).dot(sigma_inv) * (X - mu[i]), axis=1))
+    for x in X:
+        prob = []
+        for c in range(c_class):
+            prob.append(- 0.5 * (np.dot(np.dot(x - mu[c], sigma_inv), x - mu[c]) + np.log(np.linalg.norm(sigma))) + np.log(phi[c]))
         probs.append(prob)
-    yh = np.argmax(probs, axis=0)
+    yh = np.argmax(probs, axis=1)
     return yh
 
 
@@ -110,9 +112,3 @@ def confusion_score_matrix(label, pred):
     conf_mat = pd.DataFrame(conf_mat, index=class_name, columns=class_name)
     score_mat = pd.DataFrame(score_mat, index=class_name, columns=['Accuracy', 'Precision', 'Recall', 'F1'])
     return conf_mat, score_mat
-
-
-def generate_data(mu, sigma, c, size):
-    X = np.random.multivariate_normal(mu, sigma, size)
-    y = np.array([c for _ in range(size)])
-    return X, y
