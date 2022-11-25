@@ -22,49 +22,46 @@ def calc_phi(labels):
 
 
 def calc_mu(data):
-    classes = np.unique(data.y)
+    classes, counts = np.unique(data.y, return_counts=True)
     c_class = len(classes)
     _, n_feature = data.iloc[:, :-1].shape
     mu = np.zeros((c_class, n_feature))
     for i in classes:
-        mu[i] = np.array(data[data.y == i].iloc[:, :-1].mean())
+        mu[i] = np.sum(np.array(data[data.y == i].iloc[:, :-1]), axis=0) / counts[i]
     return mu
 
 
-#def calc_sigma(data):
-#    sigma = np.cov(data.iloc[:, :-1], rowvar=False)
-#   return sigma
-
-
 def calc_sigma(data):
-    x=data[['X1', 'X2']].values
-    y=data[['y']].values
-    mu=calc_mu(data)
-    cov = np.zeros(shape=(x.shape[1], x.shape[1]))
-    for i in range(x.shape[0]):
-        if y[i]==0:
-            x_mu=x[i]-mu[0]
-        else:
-            x_mu=x[i]-mu[1]
-            
-        cov +=(x_mu).reshape(x.shape[1],1).dot((x_mu).reshape(1,x.shape[1]))
-    cov = cov/x.shape[0]
-    return cov
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+    m_sample, n_feature = X.shape
+    mu = calc_mu(data)
+    sigma = np.zeros((n_feature, n_feature))
+    for i in range(m_sample):
+        X_mu = X[i] - mu[y[i]]
+        sigma += np.dot(X_mu.reshape(n_feature, -1), (X_mu.reshape(-1, n_feature)))
+    sigma /= m_sample
+    return sigma
 
-def Prediction(data, Mu, Sigma, Nclass):
-    X=data[['X1','X2']].values
-    y=data[['y']].values
-    Probabilities = []
-    p=calc_phi(y)
-    for i in range(Nclass):
-        Phi = ((p[i])**i * (1 - p[i])**(1 - i))
-        mu = Mu[i, :]
-        invSigma = np.linalg.pinv(Sigma)
-        Probability = np.log(Phi) +(-0.5 * np.sum((X-mu).dot(invSigma)*(X-mu), axis=1))
-        Probabilities.append(Probability)
 
-    Classes = np.argmax(Probabilities, axis=0)
-    return Classes, Probabilities
+def calc_params(data):
+    phi = calc_phi(data.y)
+    mu = calc_mu(data)
+    sigma = calc_sigma(data)
+    return phi, mu, sigma
+
+
+def bayesian_prediction(data, phi, mu, sigma):
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+    c_class = len(np.unique(y))
+    probs = []
+    for i in range(c_class):
+        sigma_inv = np.linalg.inv(sigma)
+        prob = np.log(phi[i]) + (-0.5 * np.sum((X - mu[i]).dot(sigma_inv) * (X - mu[i]), axis=1))
+        probs.append(prob)
+    yh = np.argmax(probs, axis=0)
+    return yh
 
 
 def calc_accuracy(y, yh):
@@ -76,4 +73,40 @@ def calc_accuracy(y, yh):
     acc = correct / m_sample
     return acc
 
-    
+
+def calc_scores(conf_mat):
+    c_class = len(conf_mat)
+    tp, tn, fp, fn = np.zeros(c_class, int), np.zeros(c_class, int), np.zeros(c_class, int), np.zeros(c_class, int)
+    scores = np.zeros((c_class, 4))
+    for i in range(c_class):
+        tp[i] = conf_mat[i][i]
+        tn[i] = np.sum(np.delete(np.delete(conf_mat, i, 0), i, 1))
+        fp[i] = np.sum(np.delete(conf_mat[i, :], i))
+        fn[i] = np.sum(np.delete(conf_mat[:, i], i, 0))
+        scores[i][0] = (tp[i] + tn[i]) / (tp[i] + tn[i] + fp[i] + fn[i])
+        scores[i][1] = tp[i] / (tp[i] + fp[i])
+        scores[i][2] = tp[i] / (tp[i] + fn[i])
+        scores[i][3] = (2 * tp[i]) / ((2 * tp[i]) + fp[i] + fn[i])
+    return scores
+
+
+def confusion_score_matrix(label, pred):
+    unique = np.unique(label)
+    c_class = len(unique)
+    label_index, pred_index = [], []
+    conf_mat = np.zeros((c_class, c_class), int)
+    for i in range(c_class):
+        label_index.append(np.where(label == i)[0])
+        pred_index.append(np.where(pred == i)[0])
+    for i in range(c_class):
+        for j in range(c_class):
+            conf_mat[i][j] = len(np.intersect1d(pred_index[i], label_index[j]))
+    score_mat = calc_scores(conf_mat)
+
+    class_name = []
+    for c in list(map(str, unique)):
+        class_name.append('Class ' + c)
+
+    conf_mat = pd.DataFrame(conf_mat, index=class_name, columns=class_name)
+    score_mat = pd.DataFrame(score_mat, index=class_name, columns=['Accuracy', 'Precision', 'Recall', 'F1'])
+    return conf_mat, score_mat
