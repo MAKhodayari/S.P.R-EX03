@@ -7,9 +7,9 @@ def open_bayesian():
     headers = ['X1', 'X2', 'y']
 
     train_1 = pd.read_csv('./dataset/BC-Train1.csv', names=headers)
-    train_2 = pd.read_csv('./dataset/BC-Train2.csv', names=headers)
-
     test_1 = pd.read_csv('./dataset/BC-Test1.csv', names=headers)
+
+    train_2 = pd.read_csv('./dataset/BC-Train2.csv', names=headers)
     test_2 = pd.read_csv('./dataset/BC-Test2.csv', names=headers)
 
     return train_1, train_2, test_1, test_2
@@ -32,15 +32,11 @@ def calc_mu(data):
 
 
 def calc_sigma(data):
-    X = data.iloc[:, :-1].values
-    y = data.iloc[:, -1].values
-    m_sample, n_feature = X.shape
-    mu = calc_mu(data)
-    sigma = np.zeros((n_feature, n_feature))
-    for i in range(m_sample):
-        X_mu = X[i] - mu[y[i]]
-        sigma += np.dot(X_mu.reshape(n_feature, -1), (X_mu.reshape(-1, n_feature)))
-    sigma /= m_sample
+    _, n_feature = data.iloc[:, :-1].shape
+    c_class = len(np.unique(data.y))
+    sigma = np.zeros((c_class, n_feature, n_feature))
+    for i in range(c_class):
+        sigma[i] = np.cov(data[data.y == i].iloc[:, :-1], rowvar=False)
     return sigma
 
 
@@ -60,7 +56,8 @@ def bayesian_prediction(data, phi, mu, sigma):
     for x in X:
         prob = []
         for c in range(c_class):
-            prob.append(- 0.5 * (np.dot(np.dot(x - mu[c], sigma_inv), x - mu[c]) + np.log(np.linalg.norm(sigma))) + np.log(phi[c]))
+            prob.append(- 0.5 * (np.dot(np.dot(x - mu[c], sigma_inv[c]), x - mu[c]) +
+                                 np.log(np.linalg.norm(sigma[c]))) + np.log(phi[c]))
         probs.append(prob)
     yh = np.argmax(probs, axis=1)
     return yh
@@ -114,7 +111,17 @@ def confusion_score_matrix(label, pred):
     return conf_mat, score_mat
 
 
-def generate_data(mu, sigma, c, size):
+def generate_clss_data(mu, sigma, c, size):
     X = np.random.multivariate_normal(mu, sigma, size)
-    y = np.array([c for _ in range(size)])
-    return X, y
+    data = np.insert(X, 2, c, axis=1)
+    return data
+
+
+def generate_dataset(mu, sigma, c_class, c_size):
+    dataset = []
+    for i in range(c_class):
+        dataset = np.append(dataset, generate_clss_data(mu[i], sigma[i], i, c_size))
+    dataset = dataset.reshape((c_class * c_size, 3))
+    dataset = pd.DataFrame(dataset, columns=['X1', 'X2', 'y'])
+    dataset = dataset.astype({'y': 'int'})
+    return dataset
