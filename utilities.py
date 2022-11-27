@@ -31,19 +31,20 @@ def calc_mu(data):
     return mu
 
 
-def calc_sigma(data):
-    _, n_feature = data.iloc[:, :-1].shape
+def calc_sigma(data, mu):
+    m_sample, n_feature = data.iloc[:, :-1].shape
     c_class = len(np.unique(data.y))
     sigma = np.zeros((c_class, n_feature, n_feature))
     for i in range(c_class):
-        sigma[i] = np.cov(data[data.y == i].iloc[:, :-1], rowvar=False)
+        sigma[i] = np.dot((data[data.y == i].iloc[:, :-1] - mu[i]).T, (data[data.y == i].iloc[:, :-1] - mu[i]))
+    sigma /= m_sample
     return sigma
 
 
 def calc_params(data):
     phi = calc_phi(data.y)
     mu = calc_mu(data)
-    sigma = calc_sigma(data)
+    sigma = calc_sigma(data, mu)
     return phi, mu, sigma
 
 
