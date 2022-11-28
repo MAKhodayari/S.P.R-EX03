@@ -31,12 +31,23 @@ def calc_mu(data):
     return mu
 
 
+def calc_cov(x, y):
+    m_sample = len(x)
+    mu_x = sum(x) / len(x)
+    mu_y = sum(y) / len(y)
+    normal_x = [i - mu_x for i in x]
+    normal_y = [i - mu_y for i in y]
+    cov = sum([normal_x[i] * normal_y[i] for i in range(m_sample)]) / m_sample
+    return cov
+
+
 def calc_sigma(data):
-    _, n_feature = data.iloc[:, :-1].shape
     c_class = len(np.unique(data.y))
+    _, n_feature = data.iloc[:, :-1].shape
     sigma = np.zeros((c_class, n_feature, n_feature))
     for i in range(c_class):
-        sigma[i] = np.cov(data[data.y == i].iloc[:, :-1], rowvar=False)
+        class_data = data[data.y == i].iloc[:, :-1].values.T
+        sigma[i] = [[calc_cov(a, b) for a in class_data] for b in class_data]
     return sigma
 
 
