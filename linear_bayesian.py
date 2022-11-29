@@ -1,9 +1,16 @@
+from matplotlib import pyplot as plt
+
 import utilities as utl
 
 
 if __name__ == '__main__':
     # Opening & Preparing Data
     train_1, test_1, train_2, test_2 = utl.open_bayesian()
+
+    train_1.iloc[:, :-1] = utl.normalize(train_1.iloc[:, :-1])
+    test_1.iloc[:, :-1] = utl.normalize(test_1.iloc[:, :-1])
+    train_2.iloc[:, :-1] = utl.normalize(train_2.iloc[:, :-1])
+    test_2.iloc[:, :-1] = utl.normalize(test_2.iloc[:, :-1])
 
     # Train Phase Of Dataset 1
     dataset_1_phi, dataset_1_mu, dataset_1_sigma = utl.calc_params(train_1)
@@ -28,6 +35,19 @@ if __name__ == '__main__':
     test_2_pred = utl.bayesian_prediction(test_2, dataset_2_phi, dataset_2_mu, dataset_2_sigma)
     test_2_conf_mat, test_2_score_mat = utl.confusion_score_matrix(test_2.y, test_2_pred)
     test_2_acc = utl.calc_accuracy(test_2.y, test_2_pred)
+
+    # Plots
+    fig, axs = plt.subplots(2, 2, figsize=(10.5, 7.5))
+
+    fig.suptitle('Bayesian Classifier With Linear Boundary')
+
+    utl.plot_linear_boundary(train_1, train_1_pred, dataset_1_phi, dataset_1_mu, dataset_1_sigma, axs[0, 0], "BC-Train1")
+    utl.plot_linear_boundary(test_1, test_1_pred, dataset_1_phi, dataset_1_mu, dataset_1_sigma, axs[1, 0], "BC-Test1")
+    utl.plot_linear_boundary(train_2, train_2_pred, dataset_2_phi, dataset_2_mu, dataset_2_sigma, axs[0, 1], "BC-Train2")
+    utl.plot_linear_boundary(test_2, test_2_pred, dataset_2_phi, dataset_2_mu, dataset_2_sigma, axs[1, 1], "BC-Test2")
+
+    fig.tight_layout()
+    plt.show()
 
     # Results
     print('─' * 50)
@@ -69,12 +89,3 @@ if __name__ == '__main__':
     print(f'BC-Test2 Accuracy: {test_2_acc}')
 
     print('─' * 50)
-  
-
-
-# Decision boundary plot
-    #plot_PDF(train_1,dataset_1_phi,dataset_1_mu, dataset_1_sigma)
-    utl.plot_dec_boundary(train_1,train_1_pred,dataset_1_phi,dataset_1_mu, dataset_1_sigma,"BC-Train1") 
-    utl.plot_dec_boundary(test_1,test_1_pred,dataset_1_phi,dataset_1_mu, dataset_1_sigma,"BC-Test1")
-    utl.plot_dec_boundary(train_2,train_2_pred,dataset_2_phi,dataset_2_mu, dataset_2_sigma,"BC-Train2")
-    utl.plot_dec_boundary(test_2,test_2_pred,dataset_2_phi,dataset_2_mu, dataset_2_sigma,"BC-Test2")
