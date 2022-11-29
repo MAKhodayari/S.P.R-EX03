@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
+from mpl_toolkits.mplot3d import Axes3D
+import seaborn as sn
 
 
 def open_bayesian():
@@ -136,3 +139,60 @@ def generate_dataset(mu, sigma, c_class, c_size):
     dataset = pd.DataFrame(dataset, columns=['X1', 'X2', 'y'])
     dataset = dataset.astype({'y': 'int'})
     return dataset
+
+def plot_dec_boundary(data,prediction,phi,mu,sigma,title):
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+   
+    plt.plot(X[(np.where((y == 1) & (prediction==1)))[0],0],
+            X[(np.where((y == 1) & (prediction==1)))[0],1], 'c.')
+    plt.plot(X[(np.where((y == 0) & (prediction==0)))[0],0]
+             ,X[(np.where((y == 0) & (prediction==0)))[0],1], 'm.')
+    plt.plot(X[(np.where((y == 0) & (prediction==1)))[0],0]
+            ,X[(np.where((y == 0) & (prediction==1)))[0],1], '.r')
+    plt.plot(X[(np.where((y == 1) & (prediction==0)))[0],0]
+            ,X[(np.where((y == 1) & (prediction==0)))[0],1], '.k')
+    
+    b0 = 0.5 * mu[0].T.dot(np.linalg.pinv(sigma[0])).dot(mu[0])
+    b1 = -0.5 * mu[1].T.dot(np.linalg.pinv(sigma[1])).dot(mu[1])
+    b = b0 + b1 + np.log(phi[0]/phi[1])
+    a = np.linalg.pinv(sigma[0]).dot(mu[1] - mu[0])
+    Decision_boundary= -(b + a[0]*X[:,0]) / a[1]
+    plt.plot(X[:, 0], Decision_boundary)
+    plt.title(title)
+    plt.show()
+    return
+
+def Gaussian(X, mu, Sigma):
+    const = 1/(np.sqrt(((np.pi)**2)*(np.linalg.det(Sigma))))
+    Sigin = np.linalg.inv(Sigma)
+    ans = const*np.exp(-0.5*(np.matmul((X-mu).T, np.matmul(Sigin,(X-mu)))))
+    return ans  
+
+
+def plot_PDF(data,phi,mu,sigma):
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+    c_class = len(np.unique(y))
+    colors = [('b', 'plasma'), ('r', 'plasma')]   
+    fig = plt.figure(figsize=(10, 10))
+    ax = plt.axes(projection="3d")
+   
+    for i in range(c_class):
+        Z=[]
+        data=X[(np.where((y == i)))[0]]
+        #XX, XY = np.meshgrid(data[:,0], data[:,1])
+        [Z.append(Gaussian(j,mu[i],sigma)) for j in data]
+        Z=np.array(Z)
+        ax.scatter3D(X[y == i][:, 0], X[y == i][:, 1], np.ones(1) * -0.03, colors[i][0])
+        ax.plot_trisurf(data[:,0],data[:,1],Z,cmap=colors[i][1],linewidth=2,alpha=0.9, shade=True)
+    
+    
+    plt.title('3D PDFs ', fontsize=16)
+    plt.show()
+  
+    
+    
+
+        
+        

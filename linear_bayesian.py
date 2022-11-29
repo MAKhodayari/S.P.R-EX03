@@ -69,3 +69,12 @@ if __name__ == '__main__':
     print(f'BC-Test2 Accuracy: {test_2_acc}')
 
     print('─' * 50)
+  
+
+
+# Decision boundary plot
+    #plot_PDF(train_1,dataset_1_phi,dataset_1_mu, dataset_1_sigma)
+    utl.plot_dec_boundary(train_1,train_1_pred,dataset_1_phi,dataset_1_mu, dataset_1_sigma,"BC-Train1") 
+    utl.plot_dec_boundary(test_1,test_1_pred,dataset_1_phi,dataset_1_mu, dataset_1_sigma,"BC-Test1")
+    utl.plot_dec_boundary(train_2,train_2_pred,dataset_2_phi,dataset_2_mu, dataset_2_sigma,"BC-Train2")
+    utl.plot_dec_boundary(test_2,test_2_pred,dataset_2_phi,dataset_2_mu, dataset_2_sigma,"BC-Test2")
