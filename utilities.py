@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
 
 
 def normalize(X):
@@ -25,7 +26,7 @@ def open_bayesian():
     train_2 = pd.read_csv('./dataset/BC-Train2.csv', names=headers)
     test_2 = pd.read_csv('./dataset/BC-Test2.csv', names=headers)
 
-    return train_1, train_2, test_1, test_2
+    return train_1, test_1, train_2, test_2
 
 
 def calc_phi(labels):
@@ -159,18 +160,30 @@ def plot_linear_boundary(data, data_pred, phi, mu, sigma, ax, title):
     b = (0.5 * (np.dot(np.dot(mu[0].T, sigma_inv[0]), mu[0]) - np.dot(np.dot(mu[1].T, sigma_inv[0]), mu[1]))) +\
         np.log(phi[0] / phi[1])
     decision_boundary = - (b + np.dot(a[0], X[:, 0])) / a[1]
-    plt.figure(figsize=(18, 12))
-    ax.scatter(X[(np.where((y == 1) & (data_pred == 1))), 0], X[(np.where((y == 1) & (data_pred == 1))), 1],
-               marker='.', color='c')
     ax.scatter(X[(np.where((y == 0) & (data_pred == 0))), 0], X[(np.where((y == 0) & (data_pred == 0))), 1],
-               marker='.', color='m')
+               marker='.', color='m', label='0 as 0')
+    ax.scatter(X[(np.where((y == 1) & (data_pred == 1))), 0], X[(np.where((y == 1) & (data_pred == 1))), 1],
+               marker='.', color='c', label='1 as 1')
     ax.scatter(X[(np.where((y == 0) & (data_pred == 1))), 0], X[(np.where((y == 0) & (data_pred == 1))), 1],
-               marker='.', color='r')
+               marker='.', color='r', label='0 as 1')
     ax.scatter(X[(np.where((y == 1) & (data_pred == 0))), 0], X[(np.where((y == 1) & (data_pred == 0))), 1],
-               marker='.', color='k')
+               marker='.', color='k', label='1 as 0')
     ax.plot(X[:, 0], decision_boundary)
     ax.set(xlabel='X[X1]', ylabel='X[X2]')
+    ax.legend(loc='upper left')
     ax.set_title(title)
+    return True
+
+
+def plot_contour(mu, sigma, ax, x_bound, y_bound, title, n=100):
+    c_class, n_feature = mu.shape
+    for i in range(c_class):
+        x, y = np.meshgrid(np.linspace(x_bound[0], x_bound[1], n), np.linspace(y_bound[0], y_bound[1], n))
+        two_pair = np.dstack((x, y))
+        z = multivariate_normal.pdf(two_pair, mu[i], sigma[i])
+        ax.contour(x, y, z)
+        ax.set_title(title)
+    ax.set(xlabel='X[X1]', ylabel='X[X2]')
     return True
 
 
@@ -181,14 +194,12 @@ def plot_quadratic_boundary(data, data_pred, phi, mu, sigma, ax, title):
     sigma_inv = np.linalg.inv(sigma)
     for i in range(c_class - 1):
         for j in range(i + 1, c_class):
-            a = sigma_inv[i] - sigma_inv[j]
+            a = - 0.5 * (sigma_inv[i] - sigma_inv[j])
             b = np.dot(sigma_inv[i], mu[i]) - np.dot(sigma_inv[j], mu[j])
             c = 0.5 * (np.dot(np.dot(mu[j].T, sigma_inv[j]), mu[j]) -
                        np.dot(np.dot(mu[i].T, sigma_inv[i]), mu[i]) -
-                       np.log(np.linalg.det(sigma[i] / sigma[j]))) +\
+                       np.log(np.linalg.det(sigma[i]) / np.linalg.det(sigma[j]))) +\
                 np.log(phi[i] / phi[j])
-            print(f'i:{i}, j:{j} =>\n{a}\n{b}\n{c}\n')
-    # a = sigma_inv[i]
     pass
 
 

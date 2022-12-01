@@ -7,11 +7,6 @@ if __name__ == '__main__':
     # Opening & Preparing Data
     train_1, test_1, train_2, test_2 = utl.open_bayesian()
 
-    train_1.iloc[:, :-1] = utl.normalize(train_1.iloc[:, :-1])
-    test_1.iloc[:, :-1] = utl.normalize(test_1.iloc[:, :-1])
-    train_2.iloc[:, :-1] = utl.normalize(train_2.iloc[:, :-1])
-    test_2.iloc[:, :-1] = utl.normalize(test_2.iloc[:, :-1])
-
     # Train Phase Of Dataset 1
     dataset_1_phi, dataset_1_mu, dataset_1_sigma = utl.calc_params(train_1)
 
@@ -37,16 +32,24 @@ if __name__ == '__main__':
     test_2_acc = utl.calc_accuracy(test_2.y, test_2_pred)
 
     # Plots
-    fig, axs = plt.subplots(2, 2, figsize=(10.5, 7.5))
+    db_fig, db_axs = plt.subplots(2, 2, figsize=(10.5, 7))
+    db_fig.suptitle('Bayesian Classifier With Linear Boundary')
+    utl.plot_linear_boundary(train_1, train_1_pred, dataset_1_phi, dataset_1_mu, dataset_1_sigma,
+                             db_axs[0, 0], "BC-Train1")
+    utl.plot_linear_boundary(test_1, test_1_pred, dataset_1_phi, dataset_1_mu, dataset_1_sigma,
+                             db_axs[1, 0], "BC-Test1")
+    utl.plot_linear_boundary(train_2, train_2_pred, dataset_2_phi, dataset_2_mu, dataset_2_sigma,
+                             db_axs[0, 1], "BC-Train2")
+    utl.plot_linear_boundary(test_2, test_2_pred, dataset_2_phi, dataset_2_mu, dataset_2_sigma,
+                             db_axs[1, 1], "BC-Test2")
+    db_fig.tight_layout()
 
-    fig.suptitle('Bayesian Classifier With Linear Boundary')
+    c_fig, c_axs = plt.subplots(1, 2, figsize=(10.5, 7))
+    c_fig.suptitle('Contour Plots')
+    utl.plot_contour(dataset_1_mu, dataset_1_sigma, c_axs[0], [-1.5, 7.5], [-3.5, 9.5], 'Dataset 1 (BC1)')
+    utl.plot_contour(dataset_2_mu, dataset_2_sigma, c_axs[1], [-2.5, 5.5], [-2.5, 5.5], 'Dataset 2 (BC2)')
+    c_fig.tight_layout()
 
-    utl.plot_linear_boundary(train_1, train_1_pred, dataset_1_phi, dataset_1_mu, dataset_1_sigma, axs[0, 0], "BC-Train1")
-    utl.plot_linear_boundary(test_1, test_1_pred, dataset_1_phi, dataset_1_mu, dataset_1_sigma, axs[1, 0], "BC-Test1")
-    utl.plot_linear_boundary(train_2, train_2_pred, dataset_2_phi, dataset_2_mu, dataset_2_sigma, axs[0, 1], "BC-Train2")
-    utl.plot_linear_boundary(test_2, test_2_pred, dataset_2_phi, dataset_2_mu, dataset_2_sigma, axs[1, 1], "BC-Test2")
-
-    fig.tight_layout()
     plt.show()
 
     # Results

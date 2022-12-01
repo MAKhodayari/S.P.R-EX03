@@ -1,6 +1,7 @@
 import utilities as utl
 import numpy as np
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
@@ -47,6 +48,15 @@ if __name__ == '__main__':
     test_2_pred = utl.bayesian_prediction(test_2, dataset_2_phi, dataset_2_mu, dataset_2_sigma)
     test_2_conf_mat, test_2_score_mat = utl.confusion_score_matrix(test_2.y, test_2_pred)
     test_2_acc = utl.calc_accuracy(np.array(test_2.y), test_2_pred)
+
+    # Plots
+    c_fig, c_axs = plt.subplots(1, 2, figsize=(10.5, 7))
+    c_fig.suptitle('Contour Plots')
+    utl.plot_contour(dataset_1_mu, dataset_1_sigma, c_axs[0], [0, 9.5], [0, 9.5], 'Dataset 1')
+    utl.plot_contour(dataset_2_mu, dataset_2_sigma, c_axs[1], [0, 9.5], [0, 9.5], 'Dataset 2')
+    c_fig.tight_layout()
+
+    plt.show()
 
     # Results
     print('─' * 50)
