@@ -214,7 +214,44 @@ def plot_quadratic_boundary(data, data_pred, phi, mu, sigma, ax, title):
                 np.log(phi[i] / phi[j])
     pass
 
+def parzenWindowd(data_train,x,h):
+    N,D=data_train.shape
+    const=1/(N*pow(h,D))
+    sum=0
+    for i in data_train:
+        prob=1
+        for j in range(D):
+            if np.abs((i[j]-x[j])/h)<= 0.5:
+                prob *=1
+            else:
+                prob *=0
+        sum +=prob
+    return const * sum
 
+
+def plot_parzenWindowd(data_train):
+    H=[0.09,0.3,0.6]
+    trn= data_train.iloc[:, :-1].values
+    x = np.linspace(data_train['X1'].min(),data_train['X1'].max(), 100).reshape(-1, 1)
+    y = np.linspace(data_train['X2'].min(),data_train['X2'].max(), 100).reshape(-1, 1)
+    xx, yy = np.meshgrid(x, y)
+    prob=[]
+    for h in H:
+        z=np.zeros(xx.shape)
+        for i in range(xx.shape[0]):
+            for j in range(yy.shape[0]):
+               a=[xx[i,j],yy[i,j]]
+               z[i,j] =parzenWindowd(trn,a,h)
+        prob.append(z)
+    
+    for i in range(len(H)):
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+        ax.plot_surface(xx, yy,prob[i],cmap='plasma')
+        ax.set_title('ParzenKernel-h('+str(H[i])+')')
+        fig.tight_layout()
+        ax.set(xlabel='X[X1]', ylabel='X[X2]') 
+    plt.show()       
 # def Gaussian(X, mu, Sigma):
 #     const = 1/(np.sqrt(((np.pi)**2)*(np.linalg.det(Sigma))))
 #     Sigin = np.linalg.inv(Sigma)
