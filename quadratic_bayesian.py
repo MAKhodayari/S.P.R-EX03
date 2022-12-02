@@ -50,11 +50,26 @@ if __name__ == '__main__':
     test_2_acc = utl.calc_accuracy(np.array(test_2.y), test_2_pred)
 
     # Plots
-    c_fig, c_axs = plt.subplots(1, 2, figsize=(10.5, 7))
-    c_fig.suptitle('Contour Plots')
-    utl.plot_contour(dataset_1_mu, dataset_1_sigma, c_axs[0], [0, 9.5], [0, 9.5], 'Dataset 1')
-    utl.plot_contour(dataset_2_mu, dataset_2_sigma, c_axs[1], [0, 9.5], [0, 9.5], 'Dataset 2')
-    c_fig.tight_layout()
+    dataset_1_x_bound, dataset_1_y_bound = [0, 9.5], [0, 9.5]
+    dataset_2_x_bound, dataset_2_y_bound = [0, 9.5], [0, 9.5]
+    color_map = ['summer', 'autumn', 'winter']
+
+    pdf_c_fig = plt.figure(figsize=(10, 10))
+    pdf_c_fig.suptitle('PDF & Contour Plots')
+
+    pdf_c_axs_pdf1 = pdf_c_fig.add_subplot(2, 2, 1, projection='3d')
+    utl.plot_pdf(dataset_1_mu, dataset_1_sigma, pdf_c_axs_pdf1, dataset_1_x_bound, dataset_1_y_bound,
+                 color_map, 'Dataset 1 PDF')
+    pdf_c_axs_pdf2 = pdf_c_fig.add_subplot(2, 2, 2, projection='3d')
+    utl.plot_pdf(dataset_2_mu, dataset_2_sigma, pdf_c_axs_pdf2, dataset_2_x_bound, dataset_2_y_bound,
+                 color_map, 'Dataset 2 PDF')
+    pdf_c_axs_c1 = pdf_c_fig.add_subplot(2, 2, 3)
+    utl.plot_contour(dataset_1_mu, dataset_1_sigma, pdf_c_axs_c1, dataset_1_x_bound, dataset_1_y_bound,
+                     color_map, 'Dataset 1 Contour')
+    pdf_c_axs_c2 = pdf_c_fig.add_subplot(2, 2, 4)
+    utl.plot_contour(dataset_2_mu, dataset_2_sigma, pdf_c_axs_c2, dataset_2_x_bound, dataset_2_y_bound,
+                     color_map, 'Dataset 2 Contour')
+    pdf_c_fig.tight_layout()
 
     plt.show()
 

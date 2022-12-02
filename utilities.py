@@ -175,13 +175,25 @@ def plot_linear_boundary(data, data_pred, phi, mu, sigma, ax, title):
     return True
 
 
-def plot_contour(mu, sigma, ax, x_bound, y_bound, title, n=100):
+def plot_pdf(mu, sigma, ax, x_bound, y_bound, color, title, n=100):
     c_class, n_feature = mu.shape
     for i in range(c_class):
         x, y = np.meshgrid(np.linspace(x_bound[0], x_bound[1], n), np.linspace(y_bound[0], y_bound[1], n))
         two_pair = np.dstack((x, y))
         z = multivariate_normal.pdf(two_pair, mu[i], sigma[i])
-        ax.contour(x, y, z)
+        ax.contour3D(x, y, z, 100, cmap=color[i])
+        ax.set_title(title)
+    ax.set(xlabel='X[X1]', ylabel='X[X2]', zlabel='PDF')
+    return True
+
+
+def plot_contour(mu, sigma, ax, x_bound, y_bound, color, title, n=100):
+    c_class, n_feature = mu.shape
+    for i in range(c_class):
+        x, y = np.meshgrid(np.linspace(x_bound[0], x_bound[1], n), np.linspace(y_bound[0], y_bound[1], n))
+        two_pair = np.dstack((x, y))
+        z = multivariate_normal.pdf(two_pair, mu[i], sigma[i])
+        ax.contour(x, y, z, 10, cmap=color[i])
         ax.set_title(title)
     ax.set(xlabel='X[X1]', ylabel='X[X2]')
     return True
