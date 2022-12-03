@@ -12,6 +12,13 @@ if __name__ == '__main__':
     dataset_sigma = [[[2, 0], [0, 2]], [[3, 1], [1, 3]], [[2, 1], [1, 2]]]
 
     dataset = utl.generate_dataset(dataset_mu, dataset_sigma, dataset_classes, dataset_class_size)
-    utl.plot_parzenWindowd(dataset)
 
-    
+    #plot parzenWindowd 
+
+    utl.plot_pdf_pw_gaus(dataset,'parzenWindowd ',0.9,'parzenWindowd ')
+
+    #plot gaussiankernel
+
+    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.2,'gaussiankernel-sigma(0.2)')
+    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.6,'gaussiankernel-sigma(0.6)')
+    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.9,'gaussiankernel-sigma(0.9)')
