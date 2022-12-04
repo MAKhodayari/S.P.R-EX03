@@ -2,6 +2,9 @@ import utilities as utl
 import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import colors
+from scipy import linalg
 
 
 if __name__ == '__main__':
@@ -50,6 +53,20 @@ if __name__ == '__main__':
     test_2_acc = utl.calc_accuracy(np.array(test_2.y), test_2_pred)
 
     # Plots
+    # Data Based On Label & Being Correct Or Not
+    db_fig, db_axs = plt.subplots(2, 2, figsize=(10.5, 7))
+    db_fig.suptitle('Bayesian Classifier With Linear Boundary')
+    utl.plot_raw_data(train_1, train_1_pred, 'quadratic', dataset_1_phi, dataset_1_mu, dataset_1_sigma,
+                      db_axs[0, 0], "BC-Train1")
+    utl.plot_raw_data(test_1, test_1_pred, 'quadratic', dataset_1_phi, dataset_1_mu, dataset_1_sigma,
+                      db_axs[1, 0], "BC-Test1")
+    utl.plot_raw_data(train_2, train_2_pred, 'quadratic', dataset_2_phi, dataset_2_mu, dataset_2_sigma,
+                      db_axs[0, 1], "BC-Train2")
+    utl.plot_raw_data(test_2, test_2_pred, 'quadratic', dataset_2_phi, dataset_2_mu, dataset_2_sigma,
+                      db_axs[1, 1], "BC-Test2")
+    db_fig.tight_layout()
+
+    # PDF & Contour
     dataset_1_x_bound, dataset_1_y_bound = [0, 9.5], [0, 9.5]
     dataset_2_x_bound, dataset_2_y_bound = [0, 9.5], [0, 9.5]
     color_map = ['summer', 'autumn', 'winter']
@@ -60,15 +77,19 @@ if __name__ == '__main__':
     pdf_c_axs_pdf1 = pdf_c_fig.add_subplot(2, 2, 1, projection='3d')
     utl.plot_pdf(dataset_1_mu, dataset_1_sigma, pdf_c_axs_pdf1, dataset_1_x_bound, dataset_1_y_bound,
                  color_map, 'Dataset 1 PDF')
+
     pdf_c_axs_pdf2 = pdf_c_fig.add_subplot(2, 2, 2, projection='3d')
     utl.plot_pdf(dataset_2_mu, dataset_2_sigma, pdf_c_axs_pdf2, dataset_2_x_bound, dataset_2_y_bound,
                  color_map, 'Dataset 2 PDF')
     pdf_c_axs_c1 = pdf_c_fig.add_subplot(2, 2, 3)
-    utl.plot_contour(dataset_1_mu, dataset_1_sigma, pdf_c_axs_c1, dataset_1_x_bound, dataset_1_y_bound,
-                     color_map, 'Dataset 1 Contour')
+
+    utl.plot_contour(dataset_1.iloc[:, :-1].values, dataset_1_phi, dataset_1_mu, dataset_1_sigma,
+                     pdf_c_axs_c1, dataset_1_x_bound, dataset_1_y_bound, color_map, 'quadratic', 'Dataset 1 Contour')
     pdf_c_axs_c2 = pdf_c_fig.add_subplot(2, 2, 4)
-    utl.plot_contour(dataset_2_mu, dataset_2_sigma, pdf_c_axs_c2, dataset_2_x_bound, dataset_2_y_bound,
-                     color_map, 'Dataset 2 Contour')
+
+    utl.plot_contour(dataset_2.iloc[:, :-1].values, dataset_2_phi, dataset_2_mu, dataset_2_sigma,
+                     pdf_c_axs_c2, dataset_2_x_bound, dataset_2_y_bound, color_map, 'quadratic', 'Dataset 2 Contour')
+
     pdf_c_fig.tight_layout()
 
     plt.show()

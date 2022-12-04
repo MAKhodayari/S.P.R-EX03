@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import math
 from scipy.stats import multivariate_normal
+# from scipy.optimize import curve_fit
 
 
 def normalize(X):
@@ -153,27 +154,70 @@ def generate_dataset(mu, sigma, c_class, c_size):
     return dataset
 
 
-def plot_linear_boundary(data, data_pred, phi, mu, sigma, ax, title):
-    X = data.iloc[:, :-1].values
-    y = data.iloc[:, -1].values
+def plot_linear_boundary(X, phi, mu, sigma, ax):
     sigma_inv = np.linalg.inv(sigma)
-    a = np.dot(sigma_inv[0], mu[1] - mu[0])
+    a = np.dot(sigma_inv[0], (mu[1] - mu[0]))
     b = (0.5 * (np.dot(np.dot(mu[0].T, sigma_inv[0]), mu[0]) - np.dot(np.dot(mu[1].T, sigma_inv[0]), mu[1]))) +\
         np.log(phi[0] / phi[1])
     decision_boundary = - (b + np.dot(a[0], X[:, 0])) / a[1]
-    ax.scatter(X[(np.where((y == 0) & (data_pred == 0))), 0], X[(np.where((y == 0) & (data_pred == 0))), 1],
-               marker='.', color='m', label='0 as 0')
-    ax.scatter(X[(np.where((y == 1) & (data_pred == 1))), 0], X[(np.where((y == 1) & (data_pred == 1))), 1],
-               marker='.', color='c', label='1 as 1')
-    ax.scatter(X[(np.where((y == 0) & (data_pred == 1))), 0], X[(np.where((y == 0) & (data_pred == 1))), 1],
-               marker='.', color='r', label='0 as 1')
-    ax.scatter(X[(np.where((y == 1) & (data_pred == 0))), 0], X[(np.where((y == 1) & (data_pred == 0))), 1],
-               marker='.', color='k', label='1 as 0')
     ax.plot(X[:, 0], decision_boundary)
+
+
+# def func(x, a, b, c):
+#     return a * x * x + b * x + c
+
+
+# def plot_quadratic_boundary(x_values, y_values, ax):
+#     # non-linear least squares to fit func to data
+#     p_opt, p_cov = curve_fit(func, x_values, y_values)
+#     # these are the fitted values a, b, c
+#     a, b, c = p_opt
+#     # produce 100 values in the range we want to cover along x
+#     x_fit = np.linspace(min(x_values), max(x_values), 100)
+#     # compute fitted y values
+#     y_fit = [func(x, a, b, c) for x in x_fit]
+#     ax.plot(x_fit, y_fit)
+
+
+# def plot_quadratic_boundary(data, data_pred, phi, mu, sigma, ax, title):
+#     X = data.iloc[:, :-1].values
+#     y = data.iloc[:, -1].values
+#     c_class = len(np.unique(y))
+#     sigma_inv = np.linalg.inv(sigma)
+#     for i in range(c_class - 1):
+#         for j in range(i + 1, c_class):
+#             a = - 0.5 * (sigma_inv[i] - sigma_inv[j])
+#             b = np.dot(sigma_inv[i], mu[i]) - np.dot(sigma_inv[j], mu[j])
+#             c = 0.5 * (np.dot(np.dot(mu[j].T, sigma_inv[j]), mu[j]) -
+#                        np.dot(np.dot(mu[i].T, sigma_inv[i]), mu[i]) -
+#                        np.log(np.linalg.det(sigma[i]) / np.linalg.det(sigma[j]))) +\
+#                 np.log(phi[i] / phi[j])
+#     pass
+
+
+def plot_raw_data(data, pred_label, method, phi, mu, sigma, ax, title):
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+    if method == 'linear' or method == 'quadratic':
+        ax.scatter(X[(np.where((y == 0) & (pred_label == 0))), 0], X[(np.where((y == 0) & (pred_label == 0))), 1],
+                   marker='.', color='m', label='0 => 0')
+        ax.scatter(X[(np.where((y == 1) & (pred_label == 1))), 0], X[(np.where((y == 1) & (pred_label == 1))), 1],
+                   marker='.', color='c', label='1 => 1')
+        ax.scatter(X[(np.where((y == 0) & (pred_label != 0))), 0], X[(np.where((y == 0) & (pred_label != 0))), 1],
+                   marker='.', color='r', label='0 => ?')
+        ax.scatter(X[(np.where((y == 1) & (pred_label != 1))), 0], X[(np.where((y == 1) & (pred_label != 1))), 1],
+                   marker='.', color='k', label='1 => ?')
+        if method == 'linear':
+            plot_linear_boundary(X, phi, mu, sigma, ax)
+    if method == 'quadratic':
+        ax.scatter(X[(np.where((y == 2) & (pred_label == 2))), 0], X[(np.where((y == 2) & (pred_label == 2))), 1],
+                   marker='.', color='green', label='2 => 2')
+        ax.scatter(X[(np.where((y == 2) & (pred_label != 2))), 0], X[(np.where((y == 2) & (pred_label != 2))), 1],
+                   marker='.', color='lime', label='2 => ?')
+        # plot_quadratic_boundary(a[i][:, 0], a[i][:, 1], ax)
     ax.set(xlabel='X[X1]', ylabel='X[X2]')
     ax.legend(loc='upper left')
     ax.set_title(title)
-    return True
 
 
 def plot_pdf(mu, sigma, ax, x_bound, y_bound, color, title, n=100):
@@ -188,32 +232,19 @@ def plot_pdf(mu, sigma, ax, x_bound, y_bound, color, title, n=100):
     return True
 
 
-def plot_contour(mu, sigma, ax, x_bound, y_bound, color, title, n=100):
+def plot_contour(X, phi, mu, sigma, ax, x_bound, y_bound, color, method, title):
     c_class, n_feature = mu.shape
     for i in range(c_class):
-        x, y = np.meshgrid(np.linspace(x_bound[0], x_bound[1], n), np.linspace(y_bound[0], y_bound[1], n))
+        x, y = np.meshgrid(np.linspace(x_bound[0], x_bound[1], 100), np.linspace(y_bound[0], y_bound[1], 100))
         two_pair = np.dstack((x, y))
         z = multivariate_normal.pdf(two_pair, mu[i], sigma[i])
         ax.contour(x, y, z, 10, cmap=color[i])
         ax.set_title(title)
+    if method == 'linear':
+        plot_linear_boundary(X, phi, mu, sigma, ax)
+    # elif method == 'quadratic':
+    #     plot_quadratic_boundary(X[:, 0], X[:, 1], ax)
     ax.set(xlabel='X[X1]', ylabel='X[X2]')
-    return True
-
-
-def plot_quadratic_boundary(data, data_pred, phi, mu, sigma, ax, title):
-    X = data.iloc[:, :-1].values
-    y = data.iloc[:, -1].values
-    c_class = len(np.unique(y))
-    sigma_inv = np.linalg.inv(sigma)
-    for i in range(c_class - 1):
-        for j in range(i + 1, c_class):
-            a = - 0.5 * (sigma_inv[i] - sigma_inv[j])
-            b = np.dot(sigma_inv[i], mu[i]) - np.dot(sigma_inv[j], mu[j])
-            c = 0.5 * (np.dot(np.dot(mu[j].T, sigma_inv[j]), mu[j]) -
-                       np.dot(np.dot(mu[i].T, sigma_inv[i]), mu[i]) -
-                       np.log(np.linalg.det(sigma[i]) / np.linalg.det(sigma[j]))) +\
-                np.log(phi[i] / phi[j])
-    pass
 
 
 def density_estimate(data_train, method, x, h, sigma):
