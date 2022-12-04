@@ -76,6 +76,7 @@ def calc_params(data):
 def bayesian_prediction(data, phi, mu, sigma):
     X = data.iloc[:, :-1].values
     y = data.iloc[:, -1].values
+    print(X)
     c_class = len(np.unique(y))
     sigma_inv = np.linalg.inv(sigma)
     probs = []
@@ -215,7 +216,7 @@ def plot_quadratic_boundary(data, data_pred, phi, mu, sigma, ax, title):
                 np.log(phi[i] / phi[j])
     pass
 
-def parzenWindowd(data_train,x,h,sigma):
+def parzenWindowd(data_train,x,h,sigma,k):
     N,D=data_train.shape
     const=1/(N*pow(h,D))
     sum=0
@@ -229,7 +230,7 @@ def parzenWindowd(data_train,x,h,sigma):
         sum +=prob
     return const * sum
 
-def gaussiankernel(data_train,x,h ,sigma):
+def gaussiankernel(data_train,x,h ,sigma,k):
      N,D=data_train.shape
      const=1/(N*pow(h,D))
      sum=0
@@ -240,32 +241,51 @@ def gaussiankernel(data_train,x,h ,sigma):
          sum +=prob
      return const * sum
 
-def plot_pdf_pw_gaus(data_train,func,sigma,title):
+def KNN(data_train,x,h,sigma,k):
+    N,D=data_train.shape
+    dist= np.array([math.dist(i,x) for i in data_train])
+    R_k=np.sort(dist)[k-1]
+    v= math.pi * (R_k ** D)
+    
+    if v==0 :
+        return 1
+    else :
+        return k/(N*v)
+    
+def plot_pdf_pw_gaus(data_train,func,sigma,title,flag):
     if func=='gaussiankernel':
         func =gaussiankernel
-    else:
-        func=parzenWindowd   
-    H=[0.09,0.3,0.6]
+    if func=='parzenWindowd'  :
+        func=parzenWindowd
+    if func=='KNN' :
+        func=KNN
+
+    H=[0.09,0.3,0.6]  
+    k=[1,9,99]  
     trn= data_train.iloc[:, :-1].values
-    x = np.linspace(data_train['X1'].min(),data_train['X1'].max(), 100)
-    y = np.linspace(data_train['X2'].min(),data_train['X2'].max(), 100)
+    x = np.linspace(data_train['X1'].min(),data_train['X1'].max(),100)
+    y = np.linspace(data_train['X2'].min(),data_train['X2'].max(),100)
     xx, yy = np.meshgrid(x, y)
     prob=[]
-    for h in H:
+    for h in range(len(H)):
         z=np.zeros(xx.shape)
         for i in range(xx.shape[0]):
             for j in range(yy.shape[0]):
                a=[xx[i,j],yy[i,j]]
-               z[i,j] =func(trn,a,h,sigma)
+               z[i,j] =func(trn,a,H[h],sigma,k[h])
         prob.append(z)
-    
-    for i in range(len(H)):
-        fig = plt.figure()
-        ax = fig.add_subplot(projection='3d')
-        ax.plot_surface(xx, yy,prob[i],cmap='plasma')
-        ax.set_title(title+'-h('+str(H[i])+')')
-        fig.tight_layout()
-        ax.set(xlabel='X[X1]', ylabel='X[X2]',zlabel='p(x)') 
+    pdf_c_fig = plt.figure(figsize=(10, 10))
+    x=1
+    for i in range(len(prob)):
+        ax= pdf_c_fig.add_subplot(2, 2,x, projection='3d')
+        ax.plot_surface(xx, yy,prob[i],cmap='autumn')
+        if flag ==0:
+          ax.set_title(title+'-h('+str(k[i])+')')
+        else :
+              ax.set_title(title+'-h('+str(H[i])+')')
+        ax.set(xlabel='X[X1]', ylabel='X[X2]',zlabel='P(x)') 
+        x +=1
+    pdf_c_fig.tight_layout()
     plt.show()
 
 #def plot_gaussiankernel(data_train):  

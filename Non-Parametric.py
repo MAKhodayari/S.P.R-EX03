@@ -13,12 +13,14 @@ if __name__ == '__main__':
 
     dataset = utl.generate_dataset(dataset_mu, dataset_sigma, dataset_classes, dataset_class_size)
 
-    #plot parzenWindowd 
-
-    utl.plot_pdf_pw_gaus(dataset,'parzenWindowd ',0.9,'parzenWindowd ')
+    #plot KNN
+    
+    #utl.plot_pdf_pw_gaus(dataset,'KNN',0,'KNN ',0)
+   #plot parzenWindowd
+    utl.plot_pdf_pw_gaus(dataset,'parzenWindowd',0,'parzenWindowd',1)
 
     #plot gaussiankernel
 
-    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.2,'gaussiankernel-sigma(0.2)')
-    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.6,'gaussiankernel-sigma(0.6)')
-    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.9,'gaussiankernel-sigma(0.9)')
+    #utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.2,'gaussiankernel-sigma(0.2)')
+    #utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.6,'gaussiankernel-sigma(0.6)')
+    #utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.9,'gaussiankernel-sigma(0.9)')
