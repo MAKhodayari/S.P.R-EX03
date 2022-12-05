@@ -1,4 +1,5 @@
 import utilities as utl
+import discriminative_analysis as da
 from matplotlib import pyplot as plt
 
 
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     test_2_acc = utl.calc_accuracy(test_2.y, test_2_pred)
 
     # Plots
-    # Data Based On Label & Being Correct Or Not
+    # Data Based On Label & Being Correct Or Not With Decision Boundary
     db_fig, db_axs = plt.subplots(2, 2, figsize=(10.5, 7))
     db_fig.suptitle('Bayesian Classifier With Linear Boundary')
     utl.plot_raw_data(train_1, train_1_pred, 'linear', dataset_1_phi, dataset_1_mu, dataset_1_sigma,
@@ -73,6 +74,16 @@ if __name__ == '__main__':
     pdf_c_fig.tight_layout()
 
     plt.show()
+
+    # Decision Boundary With Scikit-Learn LDA
+    dataset_1_train = [train_1.iloc[:, :-1].values, train_1.iloc[:, -1].values]
+    dataset_2_train = [train_2.iloc[:, :-1].values, train_2.iloc[:, -1].values]
+    dataset_1_test = [test_1.iloc[:, :-1].values, test_1.iloc[:, -1].values]
+    dataset_2_test = [test_2.iloc[:, :-1].values, test_2.iloc[:, -1].values]
+
+    datasets = [dataset_1_train, dataset_2_train, dataset_1_test, dataset_2_test]
+
+    da.plot_decision_boundary(datasets, 'linear', ['BC-Train1', 'BC-Train2', 'BC-Test1', 'BC-Test2'])
 
     # Results
     print('─' * 50)
