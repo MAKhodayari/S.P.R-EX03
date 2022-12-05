@@ -247,44 +247,109 @@ def plot_contour(X, phi, mu, sigma, ax, x_bound, y_bound, color, method, title):
     ax.set(xlabel='X[X1]', ylabel='X[X2]')
 
 
-def density_estimate(data_train, method, x, h, sigma):
+def parzenWindowd(data_train, x, h, sigma, k):
     N, D = data_train.shape
     const = 1 / (N * pow(h, D))
     sum = 0
     for i in data_train:
         prob = 1
         for j in range(D):
-            if method == 'parzen_window':
-                if np.abs((i[j] - x[j]) / h) <= 0.5:
-                    prob *= 1
-                else:
-                    prob *= 0
-            elif method == 'gaussian_kernel':
-                prob *= (1 / (math.sqrt(2 * math.pi) * sigma)) *\
-                        math.exp(-(((i[j] - x[j]) / h) ** 2) / (2 * sigma ** 2))
+            if np.abs((i[j] - x[j]) / h) <= 0.5:
+                prob *= 1
+            else:
+                prob *= 0
         sum += prob
     return const * sum
 
 
-def plot_pdf_non_param(data, method, sigma, title):
+def gaussiankernel(data_train, x, h, sigma, k):
+    N, D = data_train.shape
+    const = 1 / (N * pow(h, D))
+    sum = 0
+    for i in data_train:
+        prob = 1
+        for j in range(D):
+            prob *= (1 / (math.sqrt(2 * math.pi) * sigma)) * math.exp(-(((i[j] - x[j]) / h) ** 2) / (2 * sigma ** 2))
+        sum += prob
+    return const * sum
+
+
+def KNN(data_train, x, h, sigma, k):
+    N, D = data_train.shape
+    dist = np.array([math.dist(i, x) for i in data_train])
+    R_k = np.sort(dist)[k - 1]
+    v = math.pi * (R_k ** D)
+
+    if v == 0:
+        return 1
+    else:
+        return k / (N * v)
+
+
+def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
+    if func == 'gaussiankernel':
+        func = gaussiankernel
+    if func == 'parzenWindowd':
+        func = parzenWindowd
+    if func == 'KNN':
+        func = KNN
+
     H = [0.09, 0.3, 0.6]
-    x = np.linspace(data[:, 0].min(), data[:, 0].max(), 100)
-    y = np.linspace(data[:, 1].min(), data[:, 1].max(), 100)
-    x, y = np.meshgrid(x, y)
+    k = [1, 9, 99]
+    trn = data_train.iloc[:, :-1].values
+    x = np.linspace(data_train['X1'].min(), data_train['X1'].max(), 100)
+    y = np.linspace(data_train['X2'].min(), data_train['X2'].max(), 100)
+    xx, yy = np.meshgrid(x, y)
     prob = []
-    for h in H:
-        z = np.zeros(x.shape)
-        for i in range(x.shape[0]):
-            for j in range(y.shape[0]):
-                pair = [x[i, j], y[i, j]]
-                z[i, j] = density_estimate(data, method, pair, h, sigma)
+    for h in range(len(H)):
+        z = np.zeros(xx.shape)
+        for i in range(xx.shape[0]):
+            for j in range(yy.shape[0]):
+                a = [xx[i, j], yy[i, j]]
+                z[i, j] = func(trn, a, H[h], sigma, k[h])
         prob.append(z)
-    fig = plt.figure(figsize=(18, 6))
-    fig.suptitle(title)
-    for i in range(len(H)):
-        ax = fig.add_subplot(1, len(H), i + 1, projection='3d')
-        ax.plot_surface(x, y, prob[i], cmap='plasma')
-        ax.set_title('H =  ' + str(H[i]))
-        ax.set(xlabel='X[X1]', ylabel='X[X2]', zlabel='P(X)')
-    fig.tight_layout()
+    pdf_c_fig = plt.figure(figsize=(10, 10))
+    x = 1
+    for i in range(len(prob)):
+        ax = pdf_c_fig.add_subplot(2, 2, x, projection='3d')
+        ax.plot_surface(xx, yy, prob[i], cmap='autumn')
+        if flag == 0:
+            ax.set_title(title + '-h(' + str(k[i]) + ')')
+        else:
+            ax.set_title(title + '-h(' + str(H[i]) + ')')
+        ax.set(xlabel='X[X1]', ylabel='X[X2]', zlabel='P(x)')
+        x += 1
+    pdf_c_fig.tight_layout()
     plt.show()
+
+
+# def plot_gaussiankernel(data_train):
+
+
+# def Gaussian(X, mu, Sigma):
+#     const = 1/(np.sqrt(((np.pi)**2)*(np.linalg.det(Sigma))))
+#     Sigin = np.linalg.inv(Sigma)
+#     ans = const*np.exp(-0.5*(np.matmul((X-mu).T, np.matmul(Sigin,(X-mu)))))
+#     return ans
+#
+#
+# def plot_PDF(data,phi,mu,sigma):
+#     X = data.iloc[:, :-1].values
+#     y = data.iloc[:, -1].values
+#     c_class = len(np.unique(y))
+#     colors = [('b', 'plasma'), ('r', 'plasma')]
+#     fig = plt.figure(figsize=(10, 10))
+#     ax = plt.axes(projection="3d")
+#
+#     for i in range(c_class):
+#         Z=[]
+#         data=X[(np.where((y == i)))[0]]
+#         #XX, XY = np.meshgrid(data[:,0], data[:,1])
+#         [Z.append(Gaussian(j,mu[i],sigma)) for j in data]
+#         Z=np.array(Z)
+#         ax.scatter3D(X[y == i][:, 0], X[y == i][:, 1], np.ones(1) * -0.03, colors[i][0])
+#         ax.plot_trisurf(data[:,0],data[:,1],Z,cmap=colors[i][1],linewidth=2,alpha=0.9, shade=True)
+#
+#
+#     plt.title('3D PDFs ', fontsize=16)
+#     plt.show()
