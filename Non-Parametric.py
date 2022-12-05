@@ -11,6 +11,7 @@ if __name__ == '__main__':
     dataset_sigma = [[[2, 0], [0, 2]], [[3, 1], [1, 3]], [[2, 1], [1, 2]]]
 
     dataset = utl.generate_dataset(dataset_mu, dataset_sigma, dataset_classes, dataset_class_size)
+
     #plot histogram
 
     train_1, test_1 = train_test_split(dataset, test_size=0.2)
@@ -48,3 +49,9 @@ if __name__ == '__main__':
     utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.2,'gaussiankernel-sigma(0.2)',1)
     utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.6,'gaussiankernel-sigma(0.6)',1)
     utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.9,'gaussiankernel-sigma(0.9)',1)
+
+     #best h
+    
+    print("sigma: ",0.6)
+    best_h, min_error =utl.bset_h(dataset,dataset_mu,dataset_sigma ,1/3, 0.2, 0.9, 0.1, 0.6)
+    print("Best H: ", best_h)

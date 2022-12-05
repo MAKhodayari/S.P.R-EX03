@@ -370,6 +370,57 @@ def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
     pdf_c_fig.tight_layout()
     plt.show()
 
+def truePDF(data, mu, cov, phi):
+    true_pdf = 0
+    for i in range(len(mu)):
+        true_pdf += (phi * multivariate_normal.pdf(data,mu[i], cov[i]))
+        
+    return true_pdf
+
+def Mse(y,y_hat):
+    diff=y-y_hat
+    mse_pow=np.power(diff, 2,dtype='float64')
+    mse = np.mean(mse_pow)
+    return mse
+
+def bset_h(data, mu, cov, phi, h_min, h_max, h_step, sigma):  
+    data = data.iloc[:, :-1].values
+    k_fold=np.array_split(data,5)
+    min_error = 1e9
+    best_h = 0
+    for h in np.arange(h_min, h_max, h_step):
+        print("h: ", h)
+        folds_h = []
+        MSE = []
+        for fold in range(1, 6):
+            print(fold)
+            Range0 = (fold-1)*300
+            Range1 = (fold)*300
+            data_T=k_fold[fold-1]
+            x = np.linspace(np.amin(data_T[:, 0]), np.amax(
+            data_T[:, 0]), 20).reshape(-1, 1)
+            y = np.linspace(np.amin(data_T[:, 1]), np.amax(
+            data_T[:, 1]), 20).reshape(-1, 1)
+            xx, yy = np.meshgrid(x, y)
+            X_2d = np.concatenate(
+                [xx.ravel().reshape(-1, 1), yy.ravel().reshape(-1, 1)], axis=1)
+            
+            data_train=np.delete(data, slice(Range0,Range1), axis=0)
+            prob = []  
+            for x in X_2d:
+                px = gaussiankernel(data_train,x,h ,sigma,0)
+                prob.append(px)
+                
+            true_density = truePDF(X_2d,mu, cov, phi)
+            prob = np.array(prob)
+            error  = Mse(true_density,prob)
+            MSE.append(error)
+        mse = np.sum(MSE) / 5        
+        print("h =", round(h, 2), ": l2 =", mse)
+        if mse < min_error:
+            min_error = mse
+            best_h = h  
+    return best_h, min_error
 
 # def plot_gaussiankernel(data_train):
 
