@@ -1,10 +1,8 @@
-import utilities as utl
 import numpy as np
-from sklearn.model_selection import train_test_split
+import utilities as utl
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib import colors
-from scipy import linalg
+import discriminative_analysis as da
+from sklearn.model_selection import train_test_split
 
 
 if __name__ == '__main__':
@@ -93,6 +91,41 @@ if __name__ == '__main__':
     pdf_c_fig.tight_layout()
 
     plt.show()
+
+    # Decision Boundary With Scikit-Learn QDA
+    dataset_1_train_0v1 = [train_1[train_1.y != 2].iloc[:, :-1].values, train_1[train_1.y != 2].iloc[:, -1].values]
+    dataset_2_train_0v1 = [train_2[train_2.y != 2].iloc[:, :-1].values, train_2[train_2.y != 2].iloc[:, -1].values]
+    dataset_1_test_0v1 = [test_1[test_1.y != 2].iloc[:, :-1].values, test_1[test_1.y != 2].iloc[:, -1].values]
+    dataset_2_test_0v1 = [test_2[test_2.y != 2].iloc[:, :-1].values, test_2[test_2.y != 2].iloc[:, -1].values]
+
+    dataset_1_train_0v2 = [train_1[train_1.y != 1].iloc[:, :-1].values,
+                           np.array([1 if y == 2 else 0 for y in train_1[train_1.y != 1].iloc[:, -1].values])]
+    dataset_2_train_0v2 = [train_2[train_2.y != 1].iloc[:, :-1].values,
+                           np.array([1 if y == 2 else 0 for y in train_2[train_2.y != 1].iloc[:, -1].values])]
+    dataset_1_test_0v2 = [test_1[test_1.y != 1].iloc[:, :-1].values,
+                          np.array([1 if y == 2 else 0 for y in test_1[test_1.y != 1].iloc[:, -1].values])]
+    dataset_2_test_0v2 = [test_2[test_2.y != 1].iloc[:, :-1].values,
+                          np.array([1 if y == 2 else 0 for y in test_2[test_2.y != 1].iloc[:, -1].values])]
+
+    dataset_1_train_1v2 = [train_1[train_1.y != 0].iloc[:, :-1].values,
+                           np.array([1 if y == 2 else 0 for y in train_1[train_1.y != 0].iloc[:, -1].values])]
+    dataset_2_train_1v2 = [train_2[train_2.y != 0].iloc[:, :-1].values,
+                           np.array([1 if y == 2 else 0 for y in train_2[train_2.y != 0].iloc[:, -1].values])]
+    dataset_1_test_1v2 = [test_1[test_1.y != 0].iloc[:, :-1].values,
+                          np.array([1 if y == 2 else 0 for y in test_1[test_1.y != 0].iloc[:, -1].values])]
+    dataset_2_test_1v2 = [test_2[test_2.y != 0].iloc[:, :-1].values,
+                          np.array([1 if y == 2 else 0 for y in test_2[test_2.y != 0].iloc[:, -1].values])]
+
+    dataset_0v1 = [dataset_1_train_0v1, dataset_2_train_0v1, dataset_1_test_0v1, dataset_2_test_0v1]
+    dataset_0v2 = [dataset_1_train_0v2, dataset_2_train_0v2, dataset_1_test_0v2, dataset_2_test_0v2]
+    dataset_1v2 = [dataset_1_train_1v2, dataset_2_train_1v2, dataset_1_test_1v2, dataset_2_test_1v2]
+
+    da.plot_decision_boundary(dataset_0v1, 'quadratic', ['Dataset 1 Train 0 VS 1', 'Dataset 2 Train 0 VS 1',
+                                                         'Dataset 1 Test 0 VS 1', 'Dataset 2 Test 0 VS 1'])
+    da.plot_decision_boundary(dataset_0v2, 'quadratic', ['Dataset 1 Train 0 VS 2', 'Dataset 2 Train 0 VS 2',
+                                                         'Dataset 1 Test 0 VS 2', 'Dataset 2 Test 0 VS 2'])
+    da.plot_decision_boundary(dataset_1v2, 'quadratic', ['Dataset 1 Train 1 VS 2', 'Dataset 2 Train 1 VS 2',
+                                                         'Dataset 1 Test 1 VS 2', 'Dataset 2 Test 1 VS 2'])
 
     # Results
     print('─' * 50)
