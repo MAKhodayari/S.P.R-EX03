@@ -11,47 +11,47 @@ if __name__ == '__main__':
     dataset_sigma = [[[2, 0], [0, 2]], [[3, 1], [1, 3]], [[2, 1], [1, 2]]]
 
     dataset = utl.generate_dataset(dataset_mu, dataset_sigma, dataset_classes, dataset_class_size)
-
-    #plot histogram
+    # plot histogram
 
     train_1, test_1 = train_test_split(dataset, test_size=0.2)
     H = [0.09, 0.3, 0.6]
-    x=1
-    train_smapels=train_1.shape[0]
+    x = 1
+    train_samples = train_1.shape[0]
     pdf_c_fig = plt.figure(figsize=(10, 10))
-    for h in H : 
+    for h in H:
         ax = pdf_c_fig.add_subplot(2, 2, x, projection='3d')
-        hist, X1_bin,X2_bin=utl.histogram(train_1,h)
-        utl.plot_histogram(hist, X1_bin,X2_bin,"histogram",ax,h)
-        #utl.plot_density1(test_1,train_smapels,hist,X1_bin,X2_bin,"histogram",ax2,h)
-        x +=1
-    
-    x=1
-    train_smapels=train_1.shape[0]
+        hist, X1_bin, X2_bin = utl.histogram(train_1, h)
+        utl.plot_histogram(hist, X1_bin, X2_bin, "histogram", ax, h)
+        x += 1
+
+    x = 1
     pdf_c_fig = plt.figure(figsize=(10, 10))
-    for h in H : 
+    for h in H:
         ax2 = pdf_c_fig.add_subplot(2, 2, x, projection='3d')
-        hist, X1_bin,X2_bin=utl.histogram(train_1,h)
-        utl.plot_density1(test_1,train_smapels,hist,X1_bin,X2_bin,"histogram",ax2,h)
-        x +=1
+        hist, X1_bin, X2_bin = utl.histogram(train_1, h)
+        utl.plot_density1(test_1, train_samples, hist, X1_bin, X2_bin, "histogram", ax2, h)
+        x += 1
     pdf_c_fig.tight_layout()
     plt.show()
-    
+
     # plot KNN
 
-    utl.plot_pdf_pw_gaus(dataset,'KNN',0,'KNN ',0)
+    utl.plot_pdf_pw_gaus(dataset, 'KNN', 0, 'KNN ', 0)
 
     # plot parzenWindowd
     utl.plot_pdf_pw_gaus(dataset, 'parzenWindowd', 0, 'parzenWindowd', 1)
 
     # plot gaussiankernel
 
-    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.2,'gaussiankernel-sigma(0.2)',1)
-    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.6,'gaussiankernel-sigma(0.6)',1)
-    utl.plot_pdf_pw_gaus(dataset,'gaussiankernel',0.9,'gaussiankernel-sigma(0.9)',1)
+    utl.plot_pdf_pw_gaus(dataset, 'gaussiankernel', 0.2, 'gaussiankernel-sigma(0.2)', 1)
+    utl.plot_pdf_pw_gaus(dataset, 'gaussiankernel', 0.6, 'gaussiankernel-sigma(0.6)', 1)
+    utl.plot_pdf_pw_gaus(dataset, 'gaussiankernel', 0.9, 'gaussiankernel-sigma(0.9)', 1)
 
-     #best h
-    
-    print("sigma: ",0.6)
-    best_h, min_error =utl.bset_h(dataset,dataset_mu,dataset_sigma ,1/3, 0.2, 0.9, 0.1, 0.6)
+    # true pdf
+    utl.plot_truePDF(dataset, dataset_mu, dataset_sigma, 1 / 3)
+
+    # best h
+    print("sigma: ", 0.6)
+    best_h, min_error = utl.bset_h(dataset, dataset_mu, dataset_sigma, 1 / 3, 0.2, 0.9, 0.1, 0.6)
     print("Best H: ", best_h)
+

@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import math
 from scipy.stats import multivariate_normal
+
+
 # from scipy.optimize import curve_fit
 
 
@@ -157,7 +159,7 @@ def generate_dataset(mu, sigma, c_class, c_size):
 def plot_linear_boundary(X, phi, mu, sigma, ax):
     sigma_inv = np.linalg.inv(sigma)
     a = np.dot(sigma_inv[0], (mu[1] - mu[0]))
-    b = (0.5 * (np.dot(np.dot(mu[0].T, sigma_inv[0]), mu[0]) - np.dot(np.dot(mu[1].T, sigma_inv[0]), mu[1]))) +\
+    b = (0.5 * (np.dot(np.dot(mu[0].T, sigma_inv[0]), mu[0]) - np.dot(np.dot(mu[1].T, sigma_inv[0]), mu[1]))) + \
         np.log(phi[0] / phi[1])
     decision_boundary = - (b + np.dot(a[0], X[:, 0])) / a[1]
     ax.plot(X[:, 0], decision_boundary)
@@ -286,17 +288,18 @@ def KNN(data_train, x, h, sigma, k):
         return k / (N * v)
 
 
-def histogram(data,h):
-    X =data.iloc[:, :-1]
-    #histogram
-    X1_bin = np.arange(X['X1'].min(),X['X1'].max(), h)
-    X2_bin= np.arange(X['X2'].min(),X['X2'].max(), h)
-    hist, X1_bin,X2_bin = np.histogram2d(X['X1'],X['X2'], bins=(X1_bin, X2_bin))
-    return hist, X1_bin,X2_bin
+def histogram(data, h):
+    X = data.iloc[:, :-1]
+    # histogram
+    X1_bin = np.arange(X['X1'].min(), X['X1'].max(), h)
+    X2_bin = np.arange(X['X2'].min(), X['X2'].max(), h)
+    hist, X1_bin, X2_bin = np.histogram2d(X['X1'], X['X2'], bins=(X1_bin, X2_bin))
+    return hist, X1_bin, X2_bin
 
-def plot_histogram(hist,X1_bin,X2_bin,title,ax,h):
-    #fig = plt.figure()
-    #ax = fig.add_subplot(111, projection='3d')
+
+def plot_histogram(hist, X1_bin, X2_bin, title, ax, h):
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
     xpos, ypos = np.meshgrid(X1_bin[:-1] + 0.25, X2_bin[:-1] + 0.25, indexing="ij")
     xpos = xpos.ravel()
     ypos = ypos.ravel()
@@ -305,35 +308,34 @@ def plot_histogram(hist,X1_bin,X2_bin,title,ax,h):
     dz = hist.ravel()
     ax.bar3d(xpos, ypos, zpos, dx, dy, dz, zsort='average')
     ax.set_title(title + '-h(' + str(h) + ')')
-    #plt.show()
+    # plt.show()
     return True
 
-def plot_density1(test_data,train_smapels,hist,X1_bin,X2_bin,titles,ax,h):
-    XX=test_data['X1']
-    YY=test_data['X2']
-    XX,YY=np.meshgrid(XX,YY)
-    Z=np.zeros(XX.shape)
+
+def plot_density1(test_data, train_samples, hist, X1_bin, X2_bin, titles, ax, h):
+    XX = test_data['X1']
+    YY = test_data['X2']
+    XX, YY = np.meshgrid(XX, YY)
+    Z = np.zeros(XX.shape)
     for i in range(XX.shape[0]):
         for j in range(YY.shape[0]):
-             Z[i,j]=density(XX[i,j],YY[i,j] ,hist, X1_bin,X2_bin,h,train_smapels)
-    #fig = plt.figure()
-    #ax = fig.add_subplot(projection='3d')
-    surf = ax.plot_surface(XX,YY,Z)
+            Z[i, j] = density(XX[i, j], YY[i, j], hist, X1_bin, X2_bin, h, train_samples)
+    surf = ax.plot_surface(XX, YY, Z)
     ax.set_title(titles + '-h(' + str(h) + ')')
     return True
 
-def density(x1,x2,hist, X1_bin,X2_bin,h,train_smapels):
-    X1_bin,X2_bin = X1_bin[1:], X2_bin[1:]
+
+def density(x1, x2, hist, X1_bin, X2_bin, h, train_samples):
+    X1_bin, X2_bin = X1_bin[1:], X2_bin[1:]
     for i, x in enumerate(X1_bin):
         if x1 < x:
             for j, y in enumerate(X2_bin):
                 if x2 < y:
-                    num_smaples = hist[i,j]
-                    bin_area = h*h
-                    return 1/train_smapels * (num_smaples / bin_area)
+                    num_samples = hist[i, j]
+                    bin_area = h * h
+                    return 1 / train_samples * (num_samples / bin_area)
 
 
-    
 def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
     if func == 'gaussiankernel':
         func = gaussiankernel
@@ -341,12 +343,11 @@ def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
         func = parzenWindowd
     if func == 'KNN':
         func = KNN
-
     H = [0.09, 0.3, 0.6]
     k = [1, 9, 99]
     trn = data_train.iloc[:, :-1].values
     x = np.linspace(data_train['X1'].min(), data_train['X1'].max(), 40)
-    y = np.linspace(data_train['X2'].min(), data_train['X2'].max(),40)
+    y = np.linspace(data_train['X2'].min(), data_train['X2'].max(), 40)
     xx, yy = np.meshgrid(x, y)
     prob = []
     for h in range(len(H)):
@@ -370,18 +371,20 @@ def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
     pdf_c_fig.tight_layout()
     plt.show()
 
+
 def truePDF(data, mu, cov, phi):
     true_pdf = 0
     for i in range(len(mu)):
-        true_pdf += (phi * multivariate_normal.pdf(data,mu[i], cov[i]))
-        
+        true_pdf += (phi * multivariate_normal.pdf(data, mu[i], cov[i]))
     return true_pdf
+
 
 def Mse(y,y_hat):
     diff=y-y_hat
     mse_pow=np.power(diff, 2,dtype='float64')
     mse = np.mean(mse_pow)
     return mse
+
 
 def bset_h(data, mu, cov, phi, h_min, h_max, h_step, sigma):  
     data = data.iloc[:, :-1].values
@@ -394,8 +397,8 @@ def bset_h(data, mu, cov, phi, h_min, h_max, h_step, sigma):
         MSE = []
         for fold in range(1, 6):
             print(fold)
-            Range0 = (fold-1)*300
-            Range1 = (fold)*300
+            Range0 = (fold-1) * 300
+            Range1 = fold * 300
             data_T=k_fold[fold-1]
             x = np.linspace(np.amin(data_T[:, 0]), np.amax(
             data_T[:, 0]), 20).reshape(-1, 1)
@@ -422,33 +425,17 @@ def bset_h(data, mu, cov, phi, h_min, h_max, h_step, sigma):
             best_h = h  
     return best_h, min_error
 
-# def plot_gaussiankernel(data_train):
 
-
-# def Gaussian(X, mu, Sigma):
-#     const = 1/(np.sqrt(((np.pi)**2)*(np.linalg.det(Sigma))))
-#     Sigin = np.linalg.inv(Sigma)
-#     ans = const*np.exp(-0.5*(np.matmul((X-mu).T, np.matmul(Sigin,(X-mu)))))
-#     return ans
-#
-#
-# def plot_PDF(data,phi,mu,sigma):
-#     X = data.iloc[:, :-1].values
-#     y = data.iloc[:, -1].values
-#     c_class = len(np.unique(y))
-#     colors = [('b', 'plasma'), ('r', 'plasma')]
-#     fig = plt.figure(figsize=(10, 10))
-#     ax = plt.axes(projection="3d")
-#
-#     for i in range(c_class):
-#         Z=[]
-#         data=X[(np.where((y == i)))[0]]
-#         #XX, XY = np.meshgrid(data[:,0], data[:,1])
-#         [Z.append(Gaussian(j,mu[i],sigma)) for j in data]
-#         Z=np.array(Z)
-#         ax.scatter3D(X[y == i][:, 0], X[y == i][:, 1], np.ones(1) * -0.03, colors[i][0])
-#         ax.plot_trisurf(data[:,0],data[:,1],Z,cmap=colors[i][1],linewidth=2,alpha=0.9, shade=True)
-#
-#
-#     plt.title('3D PDFs ', fontsize=16)
-#     plt.show()
+def plot_truePDF(data,mu, cov, phi):
+    data = data.iloc[:, :-1].values
+    x = np.linspace(np.amin(data[:, 0]), np.amax(data[:, 0]), 20).reshape(-1, 1)
+    y = np.linspace(np.amin(data[:, 1]), np.amax(data[:, 1]), 20).reshape(-1, 1)
+    xx, yy = np.meshgrid(x, y)
+    X_2d = np.concatenate([xx.ravel().reshape(-1, 1), yy.ravel().reshape(-1, 1)], axis=1)
+    z = truePDF(X_2d, mu, cov, phi).reshape(xx.shape)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+    ax.plot_surface(xx, yy, z, cmap='plasma')
+    ax.set_title('trupdf')
+    fig.tight_layout()
+    plt.show()

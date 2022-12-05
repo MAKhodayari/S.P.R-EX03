@@ -103,7 +103,7 @@ def plot_decision_boundary(datasets, method, titles):
         plt.suptitle("Linear Discriminant Analysis")
         for i, dataset in enumerate(datasets):
             for (X, y) in [dataset]:
-                lda = LinearDiscriminantAnalysis(solver="svd", store_covariance=True)
+                lda = LinearDiscriminantAnalysis(store_covariance=True)
                 y_pred = lda.fit(X, y).predict(X)
                 splot = plot_data(lda, X, y, y_pred, i + 1, titles[i])
                 plot_lda_cov(lda, splot)
