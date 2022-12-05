@@ -286,6 +286,54 @@ def KNN(data_train, x, h, sigma, k):
         return k / (N * v)
 
 
+def histogram(data,h):
+    X =data.iloc[:, :-1]
+    #histogram
+    X1_bin = np.arange(X['X1'].min(),X['X1'].max(), h)
+    X2_bin= np.arange(X['X2'].min(),X['X2'].max(), h)
+    hist, X1_bin,X2_bin = np.histogram2d(X['X1'],X['X2'], bins=(X1_bin, X2_bin))
+    return hist, X1_bin,X2_bin
+
+def plot_histogram(hist,X1_bin,X2_bin,title,ax,h):
+    #fig = plt.figure()
+    #ax = fig.add_subplot(111, projection='3d')
+    xpos, ypos = np.meshgrid(X1_bin[:-1] + 0.25, X2_bin[:-1] + 0.25, indexing="ij")
+    xpos = xpos.ravel()
+    ypos = ypos.ravel()
+    zpos = 0
+    dx = dy = 0.5 * np.ones_like(zpos)
+    dz = hist.ravel()
+    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, zsort='average')
+    ax.set_title(title + '-h(' + str(h) + ')')
+    #plt.show()
+    return True
+
+def plot_density1(test_data,train_smapels,hist,X1_bin,X2_bin,titles,ax,h):
+    XX=test_data['X1']
+    YY=test_data['X2']
+    XX,YY=np.meshgrid(XX,YY)
+    Z=np.zeros(XX.shape)
+    for i in range(XX.shape[0]):
+        for j in range(YY.shape[0]):
+             Z[i,j]=density(XX[i,j],YY[i,j] ,hist, X1_bin,X2_bin,h,train_smapels)
+    #fig = plt.figure()
+    #ax = fig.add_subplot(projection='3d')
+    surf = ax.plot_surface(XX,YY,Z)
+    ax.set_title(titles + '-h(' + str(h) + ')')
+    return True
+
+def density(x1,x2,hist, X1_bin,X2_bin,h,train_smapels):
+    X1_bin,X2_bin = X1_bin[1:], X2_bin[1:]
+    for i, x in enumerate(X1_bin):
+        if x1 < x:
+            for j, y in enumerate(X2_bin):
+                if x2 < y:
+                    num_smaples = hist[i,j]
+                    bin_area = h*h
+                    return 1/train_smapels * (num_smaples / bin_area)
+
+
+    
 def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
     if func == 'gaussiankernel':
         func = gaussiankernel
@@ -297,8 +345,8 @@ def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
     H = [0.09, 0.3, 0.6]
     k = [1, 9, 99]
     trn = data_train.iloc[:, :-1].values
-    x = np.linspace(data_train['X1'].min(), data_train['X1'].max(), 100)
-    y = np.linspace(data_train['X2'].min(), data_train['X2'].max(), 100)
+    x = np.linspace(data_train['X1'].min(), data_train['X1'].max(), 40)
+    y = np.linspace(data_train['X2'].min(), data_train['X2'].max(),40)
     xx, yy = np.meshgrid(x, y)
     prob = []
     for h in range(len(H)):
@@ -312,9 +360,9 @@ def plot_pdf_pw_gaus(data_train, func, sigma, title, flag):
     x = 1
     for i in range(len(prob)):
         ax = pdf_c_fig.add_subplot(2, 2, x, projection='3d')
-        ax.plot_surface(xx, yy, prob[i], cmap='autumn')
+        ax.plot_surface(xx, yy, prob[i], cmap='plasma')
         if flag == 0:
-            ax.set_title(title + '-h(' + str(k[i]) + ')')
+            ax.set_title(title + '-K(' + str(k[i]) + ')')
         else:
             ax.set_title(title + '-h(' + str(H[i]) + ')')
         ax.set(xlabel='X[X1]', ylabel='X[X2]', zlabel='P(x)')
